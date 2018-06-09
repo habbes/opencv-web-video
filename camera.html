@@ -25,8 +25,8 @@ const FPS = 30;
 let stream;
 let streaming = false;
 function onReady () {
-    const src = new cv.Mat(height, width, cv.CV_8UC4);
-    const dst = new cv.Mat(height, width, cv.CV_8UC1);
+    let src;
+    let dst;
     const cap = new cv.VideoCapture(video);
 
     actionBtn.addEventListener('click', () => {
@@ -47,6 +47,8 @@ function onReady () {
             video.srcObject = stream;
             video.play();
             streaming = true;
+            src = new cv.Mat(height, width, cv.CV_8UC4);
+            dst = new cv.Mat(height, width, cv.CV_8UC1);
             setTimeout(processVideo, 0)
         })
         .catch(err => console.log(`An error occurred: ${err}`));
@@ -64,6 +66,11 @@ function onReady () {
     }
 
     function processVideo () {
+        if (!streaming) {
+            src.delete();
+            dst.delete();
+            return;
+        }
         const begin = Date.now();
         cap.read(src)
         cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
