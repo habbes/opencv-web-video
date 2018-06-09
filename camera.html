@@ -6,31 +6,62 @@
 </head>
 <body>
 <h1>OpenCV Camera</h1>
-
+<div>
+    <button id="actionBtn">Start</button>
+</div>
 <video id="video" width="300" height="225"></video>
 <canvas id="canvasOutput"></canvas>
 <script async src="opencv.js" type="text/javascript" onload="onCvLoaded();"></script>
 <script>
 function onCvLoaded () {
     console.log('cv', cv);
-    cv['onRuntimeInitialized'] = onReady;
+    cv.onRuntimeInitialized = onReady;
 }
 const video = document.getElementById('video');
+const actionBtn = document.getElementById('actionBtn');
 const width = 300;
 const height = 225;
 const FPS = 30;
+let stream;
+let streaming = false;
 function onReady () {
     const src = new cv.Mat(height, width, cv.CV_8UC4);
     const dst = new cv.Mat(height, width, cv.CV_8UC1);
     const cap = new cv.VideoCapture(video);
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => {
-        console.log('stream', stream);
-        video.srcObject = stream;
-        video.play();
-        setTimeout(processVideo, 0)
-    })
-    .catch(err => console.log(`An error occurred: ${err}`));
+
+    actionBtn.addEventListener('click', () => {
+        if (streaming) {
+            stop();
+            actionBtn.textContent = 'Start';
+        } else {
+            start();
+            actionBtn.textContent = 'Stop';
+        }
+    });
+
+    function start () {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(_stream => {
+            stream = _stream;
+            console.log('stream', stream);
+            video.srcObject = stream;
+            video.play();
+            streaming = true;
+            setTimeout(processVideo, 0)
+        })
+        .catch(err => console.log(`An error occurred: ${err}`));
+    }
+
+    function stop () {
+        if (video) {
+            video.pause();
+            video.srcObject = null;
+        }
+        if (stream) {
+            stream.getVideoTracks()[0].stop();
+        }
+        streaming = false;
+    }
 
     function processVideo () {
         const begin = Date.now();
