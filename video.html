@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+    <title>OpenCV Video Examples - Camera</title>
+    <link href="app.css" rel="stylesheet">
+</head>
+<body>
+<h1>OpenCV Camera</h1>
+
+<video id="video" width="300" height="225"></video>
+<canvas id="canvasOutput"></canvas>
+<script async src="opencv.js" type="text/javascript" onload="onCvLoaded();"></script>
+<script>
+function onCvLoaded () {
+    console.log('cv', cv);
+    cv.onRuntimeInitialized = onReady;
+}
+const video = document.getElementById('video');
+const width = 300;
+const height = 225;
+const FPS = 30;
+function onReady () {
+    const src = new cv.Mat(height, width, cv.CV_8UC4);
+    const dst = new cv.Mat(height, width, cv.CV_8UC1);
+    const cap = new cv.VideoCapture(video);
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(stream => {
+        console.log('stream', stream);
+        video.srcObject = stream;
+        video.play();
+        setTimeout(processVideo, 0)
+    })
+    .catch(err => console.log(`An error occurred: ${err}`));
+
+    function processVideo () {
+        const begin = Date.now();
+        cap.read(src)
+        cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+        cv.imshow('canvasOutput', dst);
+        const delay = 1000/FPS - (Date.now() - begin);
+        setTimeout(processVideo, delay);
+    }
+}
+
+</script>
+</body>
+</html>
