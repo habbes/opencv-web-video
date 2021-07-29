@@ -15,7 +15,7 @@
 <script>
 function onCvLoaded () {
     console.log('cv', cv);
-    cv.onRuntimeInitialized = onReady;
+    cv.onRuntimeInitialized = onReady();
 }
 const video = document.getElementById('video');
 const actionBtn = document.getElementById('actionBtn');
